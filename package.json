@@ -11,7 +11,7 @@
     "markdown-it-footnote": "^3.0.2",
     "markdown-it-github-headings": "^2.0.0",
     "markdown-it-link-attributes": "^3.0.0",
-    "node-sass": "^4.14.1",
+    "node-sass": "^6.0.1",
     "popper.js": "^1.16.1",
     "prop-types": "^15.6.0",
     "react": "^16.13.1",
