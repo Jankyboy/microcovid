@@ -1,0 +1,30 @@
+@import '~styles/variables.scss';
+
+#prevalence-details {
+  .prevalence-result.card {
+    height: auto;
+    border: 1px solid $secondary;
+    margin: 0.5rem;
+    .card-body {
+      padding: 0.8rem;
+    }
+  }
+}
+
+#switchBetweenManualDataAndLocationSelection {
+  margin-bottom: 15px;
+}
+
+#switchBetweenManualDataAndLocationSelectionText {
+  margin-left: 0.5em;
+}
+
+.rbt-input-main:disabled {
+  color: $gray-500 !important;
+}
+
+.details-header {
+  font-weight: bold;
+  display: block;
+  padding-bottom: 0.5em;
+}

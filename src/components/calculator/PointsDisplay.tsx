@@ -1,207 +1,203 @@
-import React, { useState } from 'react'
-import { Popover } from 'react-bootstrap'
-import { Link } from 'react-router-dom'
-
-import { GenericSelectControl } from './SelectControl'
-import Card from 'components/Card'
-import { ERROR_FACTOR, MAX_POINTS } from 'data/calculate'
+import React from 'react'
+import { Col, Row } from 'react-bootstrap'
+import { Trans, useTranslation } from 'react-i18next'
+import { IconType } from 'react-icons'
 import {
-  fixedPointPrecision,
-  fixedPointPrecisionPercent,
-} from 'data/FormatPrecision'
+  BsExclamationOctagonFill,
+  BsExclamationTriangleFill,
+} from 'react-icons/bs'
 
-function showPoints(points: number): boolean {
-  return points >= 0
+import { budgetConsumption } from 'components/calculator/util/budgetUtil'
+import {
+  displayPoints,
+  showPoints,
+} from 'components/calculator/util/displayUtil'
+import { ONE_MILLION } from 'data/calculate'
+import 'components/calculator/styles/PointsDisplay.scss'
+
+export interface RiskLevel {
+  name: string
+  style: string
+  max: number
+  icon?: IconType
+  overrideThermometerStyle?: boolean
 }
 
-function displayPoints(points: number): string {
-  return showPoints(points) ? fixedPointPrecision(points) : '—'
-}
+// Risk levels and max points for each (assuming a 1% budget)
+const riskLevels: RiskLevel[] = [
+  { name: 'very-low', style: 'very-low', max: 3 },
+  { name: 'low', style: 'low', max: 25 },
+  { name: 'moderate', style: 'moderate', max: 100 },
+  { name: 'high', style: 'high', max: 300 },
+  { name: 'very-high', style: 'very-high', max: 1000 },
+  {
+    name: 'dangerously-high',
+    style: 'dangerous',
+    max: 100000,
+    icon: BsExclamationTriangleFill,
+  },
+  {
+    name: 'extreme',
+    style: 'dangerous',
+    max: Infinity,
+    icon: BsExclamationOctagonFill,
+    overrideThermometerStyle: true,
+  },
+]
 
-function displayPercent(points: number): string {
-  return showPoints(points) ? fixedPointPrecisionPercent(points * 1e-6) : '—%'
-}
+const RISK_LEVELS_TO_SHOW_ON_THERMOMETER = 6 // Shows up through 'Dangerously High'
 
-function tooManyPoints(points: number): boolean {
-  return points >= MAX_POINTS
-}
+/**
+ * Pick the top X risk levels for display and use reverse the order (so they display correctly)
+ */
+const riskLevelsForThermometer = riskLevels
+  .slice(0, RISK_LEVELS_TO_SHOW_ON_THERMOMETER)
+  .reverse()
 
-function maybeGreater(points: number): string {
-  return tooManyPoints(points) ? '>' : ''
-}
+const howRisky = (points: number, budget: number): RiskLevel => {
+  const highestNormalRisklevel = riskLevels[riskLevels.length - 1]
 
-export function ExplanationCard(props: {
-  points: number
-  repeatedEvent: boolean
-}): React.ReactElement {
-  const [riskBudget, setRiskBudget] = useState(10000)
-
-  const points = props.points
-
-  const [risky, riskyStyle] = howRisky(points, riskBudget)
-
-  return (
-    <Card>
-      <p className="readout">
-        <b>
-          {' '}
-          {showPoints && tooManyPoints(points)
-            ? "NOTE: We don't display results higher than this, because our estimation method is only accurate for small probabilities."
-            : ''}
-        </b>
-      </p>
-      <h2>How risky is this?</h2>
-      <GenericSelectControl
-        id="budget-selector"
-        label="If your risk tolerance is..."
-        popover={riskTolerancePopover}
-        setter={(e: string) => setRiskBudget(Number.parseInt(e))}
-        value={riskBudget}
-        source={{
-          '10000': {
-            label: '1% per year (suggested if not at increased risk)',
-            multiplier: 1,
-          },
-          '1000': {
-            label:
-              '0.1% per year (suggest if at increased risk or regularly interracting with people at increased risk)',
-            multiplier: 0.1,
-          },
-        }}
-      />
-      <p className="readout">
-        ... then for you this is a{' '}
-        <span className={riskyStyle}>
-          <b>{showPoints(points) ? risky : '——'}</b>
-        </span>{' '}
-        risk activity.
-      </p>
-      <h2>What does this mean numerically?</h2>
-      <p>
-        This is a roughly {maybeGreater(points)}
-        {displayPoints(points)}-in-a-million ({maybeGreater(points)}
-        {displayPercent(points)}){props.repeatedEvent ? ' per week ' : ' '}
-        chance of getting COVID from this activity with these people.
-      </p>
-      <p>{budgetConsumption(points, riskBudget, props.repeatedEvent)}</p>
-    </Card>
-  )
-}
-
-const riskyStyles = ['low-risk', 'medium-risk', 'high-risk']
-const STYLE_LOW = 0
-const STYLE_MEDIUM = 1
-const STYLE_HIGH = 2
-
-function howRisky(points: number, budget: number): string[] {
+  // Then check against normalized points
   const normalizedPoints = points / (budget / 10000)
-  if (normalizedPoints < 3) {
-    return ['very low', riskyStyles[STYLE_LOW]]
-  } else if (normalizedPoints < 25) {
-    return ['low', riskyStyles[STYLE_LOW]]
-  } else if (normalizedPoints < 100) {
-    return ['moderate', riskyStyles[STYLE_MEDIUM]]
-  } else if (normalizedPoints < 300) {
-    return ['high', riskyStyles[STYLE_HIGH]]
-  } else if (normalizedPoints < 1000) {
-    return ['very high', riskyStyles[STYLE_HIGH]]
-  } else {
-    return ['dangerously high', riskyStyles[STYLE_HIGH]]
-  }
-}
-
-const budgetConsumption = (
-  points: number,
-  budget: number,
-  repeatedEvent: boolean,
-) => {
-  if (repeatedEvent) {
-    return `Having this interraction regularly would use up
-        ~${fixedPointPrecision(
-          ((points * 52) / budget) * 100,
-        )}% of your annual risk
-        allocation.`
-  }
-  const weekBudget = budget / 50 // Numbers look cleaner than 52.
-  if (points > weekBudget) {
-    const weeksConsumed = fixedPointPrecision(points / weekBudget)
-    return `Doing this activity once would use up your entire risk allocation for
-        ~${weeksConsumed} ${
-      Number.parseInt(weeksConsumed) > 1 ? 'weeks' : 'week'
-    }.`
-  }
-  return `Doing this activity once would use up
-      ~${fixedPointPrecision((points / weekBudget) * 100)}% of your risk
-      allocation for one week.`
-}
-
-export function PointsDisplay(props: {
-  points: number
-  repeatedEvent: boolean
-}): React.ReactElement {
+  const curLevel = riskLevels.find((level) => normalizedPoints < level.max)
   return (
-    <div className="top-half-card">
-      <strong>Results:</strong>
-      {showPoints(props.points) ? (
-        <h1>
-          {tooManyPoints(props.points) ? '>' : '~'}
-          {displayPoints(props.points)} microCOVIDs (
-          {maybeGreater(props.points)}
-          {displayPoints(props.points / ERROR_FACTOR)} to{' '}
-          {maybeGreater(props.points)}
-          {displayPoints(props.points * ERROR_FACTOR)})
-          {props.repeatedEvent ? ' per week' : ''}
-        </h1>
-      ) : (
-        <h1>fill in calculator to see</h1>
-      )}
-    </div>
+    curLevel || highestNormalRisklevel // Default to the highest risk level
   )
 }
 
-const riskTolerancePopover = (
-  <Popover id="popover-basic">
-    <Popover.Title as="h3">About At Risk Populations</Popover.Title>
-    <Popover.Content>
-      <p>
-        Our living group (all at average risk) has agreed to a{' '}
-        <Link to="/paper/2-riskiness">1% risk of getting COVID per year. </Link>
-      </p>
-      <p>
-        We suggest more caution (0.1% risk per year) for people at increased
-        risk of severe illness (or in contact with people at increased risk).
-      </p>
-      <p>
-        <p>
-          <a
-            href="https://www.cdc.gov/coronavirus/2019-ncov/need-extra-precautions/older-adults.html"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Risk increases with age.
-          </a>{' '}
-          We think age over 60 confers substantial increased risk.
-        </p>
-        <p>
-          <a
-            href="https://www.cdc.gov/coronavirus/2019-ncov/need-extra-precautions/people-with-medical-conditions.html"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Certain underlying medical conditions
-          </a>{' '}
-          also confer increased risk:
-        </p>
-        <ul>
-          <li>BMI of 30 or higher</li>
-          <li>Type 2 diabetes mellitus</li>
-          <li>COPD or other heart conditions</li>
-          <li>Cancer</li>
-          <li>Chronic kidney disease</li>
-          <li>Immunocompromise from solid organ transplant</li>
-          <li>Sickle cell disease</li>
-        </ul>
-      </p>
-    </Popover.Content>
-  </Popover>
-)
+function Thermometer(props: {
+  doShowPoints: boolean
+  activeRiskLevel: RiskLevel
+}): React.ReactElement {
+  const getActiveLevelClass = (
+    doShowPoints: boolean,
+    activeRiskLevel: RiskLevel,
+    comparisonRiskLevel: RiskLevel,
+  ) => {
+    return doShowPoints && activeRiskLevel === comparisonRiskLevel
+      ? ' current-level'
+      : ''
+  }
+
+  if (props.doShowPoints && props.activeRiskLevel.overrideThermometerStyle) {
+    return (
+      <>
+        {riskLevelsForThermometer.map((level) => (
+          <div
+            key={level.style}
+            className={`thermometer-piece risk-override risk-${props.activeRiskLevel.style}`}
+          ></div>
+        ))}
+      </>
+    )
+  }
+
+  return (
+    <>
+      {/* Iterate on the risk levels to build each pieces of the thermometer, and set the active level. */}
+      {riskLevelsForThermometer.map((level) => (
+        <div
+          key={level.style}
+          className={
+            `thermometer-piece risk-${level.style}` +
+            getActiveLevelClass(
+              props.doShowPoints,
+              props.activeRiskLevel,
+              level,
+            )
+          }
+          aria-label={`Thermometer Section Risk Level ${level.name}`}
+        ></div>
+      ))}
+    </>
+  )
+}
+
+export default function PointsDisplay(props: {
+  points: number
+  repeatedEvent: boolean
+  riskBudget: number
+  upperBound: number
+  lowerBound: number
+}): React.ReactElement {
+  const activeRiskLevel = howRisky(props.points, props.riskBudget)
+  const doShowPoints = showPoints(props.points)
+  const { t } = useTranslation()
+  const riskLabel = (name: string): string => {
+    // we call these out here explicitly so that i18next can pick this up and
+    // generate entries in locales automatically
+    if (name === 'very-low') return t('calculator.category_very_low')
+    if (name === 'low') return t('calculator.category_low')
+    if (name === 'moderate') return t('calculator.category_moderate')
+    if (name === 'high') return t('calculator.category_high')
+    if (name === 'very-high') return t('calculator.category_very_high')
+    if (name === 'dangerously-high')
+      return t('calculator.category_dangerously_high')
+    if (name === 'extreme') return t('calculator.category_extreme')
+    return 'Undefined'
+  }
+  return (
+    <Row className="top-half-card no-gutters">
+      <Col className="thermometer-container">
+        <Thermometer
+          doShowPoints={doShowPoints}
+          activeRiskLevel={activeRiskLevel}
+        />
+      </Col>
+      <Col md="11" sm="10" xs="10" className="points-container">
+        {!doShowPoints ? (
+          <div className="risk-level"></div>
+        ) : (
+          <div className={'risk-level risk-' + activeRiskLevel.style}>
+            {!activeRiskLevel.icon ? null : (
+              <activeRiskLevel.icon className="risk-icon" />
+            )}
+            <span>
+              {riskLabel(activeRiskLevel.name)}{' '}
+              {t('calculator.category_postfix')}
+            </span>
+          </div>
+        )}
+        <div className="budget-consumption">
+          {doShowPoints && (
+            <>
+              {budgetConsumption(
+                props.points,
+                props.riskBudget,
+                t('calculator.explanationcard.multiple_suffix'),
+                t('calculator.explanationcard.percentage_suffix'),
+              )}
+            </>
+          )}
+        </div>
+        <div className="points">
+          {doShowPoints ? (
+            <>
+              ~{displayPoints(props.points)}{' '}
+              <Trans>calculator.pointsdisplay.microCOVIDs</Trans>{' '}
+              {props.repeatedEvent ? t('per week') : t('each time')}{' '}
+              <span className="points-range d-md-inline d-none">
+                {props.upperBound >= ONE_MILLION ? null : (
+                  <>
+                    (
+                    <Trans
+                      values={{
+                        from: displayPoints(props.lowerBound),
+                        to: displayPoints(props.upperBound),
+                      }}
+                    >
+                      calculator.pointsdisplay.range
+                    </Trans>
+                    )
+                  </>
+                )}
+              </span>
+            </>
+          ) : (
+            <Trans>calculator.pointsdisplay.empty_warning</Trans>
+          )}
+        </div>
+      </Col>
+    </Row>
+  )
+}
