@@ -44,7 +44,7 @@ module.exports = {
             group: 'sibling',
           },
           {
-            pattern: 'paper/**',
+            pattern: 'posts/**',
             group: 'sibling',
           },
         ],
@@ -62,5 +62,6 @@ module.exports = {
         trailingComma: 'all',
       },
     ],
+    eqeqeq: 'error',
   },
 }

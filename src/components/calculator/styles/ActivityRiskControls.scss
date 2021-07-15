@@ -1,0 +1,183 @@
+@use "sass:color";
+@import '~styles/variables.scss';
+
+// TODO(jy2wong) transfer to SegmentedControl.scss
+.form-group label.btn {
+  font-size: $font-size-base
+}
+
+.segmented-scrollable {
+  overflow-x: auto;
+  padding-right: 1px;
+}
+
+.segmented-scrollable label {
+  background-color: $white;
+  border-color: $gray-400;
+}
+
+.two-lines {
+  min-height: 3.1em
+}
+
+.segmented-label {
+  font-weight: bold;
+  display: block;
+}
+
+.segmented-multiplier {
+  font-size: small;
+  color: $gray-600;
+}
+
+.segmented-value {
+  display: none;  // hide on desktop
+}
+
+.btn:hover .segmented-multiplier {
+  color: $white;
+}
+
+.active .segmented-label {
+  font-weight: bold;
+}
+
+.active .segmented-multiplier {
+  color: $white;
+  font-weight: bolder;
+}
+
+// hide focus indicator on segmented control buttons.
+.active.focus.segmented-button {
+  box-shadow: none !important;
+}
+
+.segmented-scrollable .btn-outline-secondary.btn:hover {
+  background-color: $gray-500;
+}
+
+.segmented-scrollable .btn-outline-secondary.active:hover {
+  background-color: $secondary !important;
+}
+
+.segmented-scrollable .btn-outline-secondary.active:hover span {
+  color: $gray-300;
+}
+
+.segmented-scrollable .btn-outline-cyan.btn:hover {
+  background-color: color.adjust($cyan, $lightness: 15%, $saturation: -15%);
+  color: color.mix($cyan, $white, 10%) !important;
+}
+
+.segmented-scrollable .btn-outline-cyan.active:hover {
+  // Arrow keys do not move between options. Mouse is hovering over a currently
+  // selected option.
+  color: color.mix($cyan, $white, 20%) !important;
+}
+
+.mobile-vertical {
+@media (max-width: 768px) {
+  .segmented-wrap {
+    // everything but the first button loses its left border without this
+    padding-left: 1px;
+    flex-wrap: wrap;
+  }
+
+  .segmented-button {
+    width: 100%;
+  }
+
+  .segmented-label {
+    text-align: left;
+    min-height: 0;
+    display: inline;
+    float: left;
+  }
+
+  .segmented-multiplier {
+    display: inline;
+    float: right;
+  }
+
+  .active .segmented-value {
+    display: inline;
+    color: $gray-500;
+    float: left;
+    width: 100%;
+  }
+  .active:hover .segmented-value {
+    color: $white;
+  }
+
+  .segmented-scrollable .active span {
+    color: $white !important;
+  }
+  .segmented-scrollable .active:hover span {
+    color: $white !important;
+  }
+
+  .segmented-tooltip {
+    display: none !important;
+    visibility: hidden;
+  }
+
+  .segmented-wrap.btn-group {
+    // Remove doubled borders on inner buttons
+    > .btn:not(:first-child),
+    > .btn-group:not(:first-child) > .btn {
+      border-top: 0 !important;
+    }
+
+    > .btn:first-child {
+      border-radius: 0.25rem 0.25rem 0 0;
+      // first button ends up shifted 1px to the right without this?
+      margin-left: -1px;
+    }
+
+    > .btn:last-child {
+      border-radius: 0 0 0.25rem 0.25rem;
+    }
+  }
+
+}
+}
+// TODO(jy2wong) end transfer to SegmentedControl.scss
+
+.mask-not-listed-prompt.btn {
+  margin: 0.4em 0 0 0.5em;
+  padding: 0 !important;
+  transition: none;
+  border: none;
+}
+
+.mask-not-listed-prompt.btn:focus {
+  box-shadow: none;
+  border: none;
+}
+
+.mask-not-listed {
+  margin-top: 1em;
+  border: none !important;
+}
+
+.mask-not-listed button {
+  color: $primary !important;
+}
+
+.mask-not-listed thead {
+  background-color: $secondary;
+  color: $white;
+}
+
+#yourMaskHelpText, #theirMaskHelpText {
+  padding-left: 0.5em;
+}
+
+@media (max-width: 768px) {
+  // hide mask description from "YourMask: " line on mobile
+  label[for="yourMask"] span, label[for="theirMask"] span {
+    display: none;
+    height: 0;
+  }
+}
+

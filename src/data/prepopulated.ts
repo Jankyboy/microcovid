@@ -2,21 +2,30 @@ import { CalculatorData } from './calculate'
 
 export type PartialData = Omit<
   CalculatorData,
+  | 'riskBudget'
+  | 'useManualEntry'
   | 'topLocation'
   | 'subLocation'
   | 'population'
   | 'casesPastWeek'
   | 'casesIncreasingPercentage'
   | 'positiveCasePercentage'
+  | 'prevalanceDataDate'
+  | 'percentFullyVaccinated'
+  | 'unvaccinatedPrevalenceRatio'
+  | 'averageFullyVaccinatedMultiplier'
+  | 'yourVaccineType'
+  | 'yourVaccineDoses'
 >
 
 export const prepopulated: {
   [key: string]: PartialData
 } = {
-  'Outdoor masked hangout with 2 people': {
+  outdoorMasked2: {
     riskProfile: 'average',
     interaction: 'oneTime',
     personCount: 2,
+    symptomsChecked: 'no',
 
     setting: 'outdoor',
     distance: 'normal',
@@ -24,12 +33,15 @@ export const prepopulated: {
     theirMask: 'basic',
     yourMask: 'basic',
     voice: 'normal',
+    theirVaccine: 'undefined',
+    scenarioName: 'outdoorMasked2',
   },
 
-  'Indoor unmasked hangout with 2 people': {
+  indoorUnmasked2: {
     riskProfile: 'average',
     interaction: 'oneTime',
     personCount: 2,
+    symptomsChecked: 'no',
 
     setting: 'indoor',
     distance: 'normal',
@@ -37,12 +49,15 @@ export const prepopulated: {
     theirMask: 'none',
     yourMask: 'none',
     voice: 'normal',
+    theirVaccine: 'undefined',
+    scenarioName: 'indoorUnmasked2',
   },
 
-  'Car ride with 1 person for 15 mins': {
+  '1person_15minCarRide': {
     riskProfile: 'average',
     interaction: 'oneTime',
     personCount: 1,
+    symptomsChecked: 'no',
 
     setting: 'indoor',
     distance: 'normal',
@@ -50,12 +65,15 @@ export const prepopulated: {
     theirMask: 'none',
     yourMask: 'none',
     voice: 'normal',
+    theirVaccine: 'undefined',
+    scenarioName: '1person_15minCarRide',
   },
 
-  'One-night stand with a random person': {
+  oneNightStand: {
     riskProfile: 'average',
     interaction: 'oneTime',
     personCount: 1,
+    symptomsChecked: 'no',
 
     setting: 'indoor',
     distance: 'intimate',
@@ -63,12 +81,15 @@ export const prepopulated: {
     theirMask: 'none',
     yourMask: 'none',
     voice: 'normal',
+    theirVaccine: 'undefined',
+    scenarioName: 'oneNightStand',
   },
 
-  'Live-in partner who has no indoor interactions besides you': {
+  liveInPartner_noContacts: {
     riskProfile: 'livingAlone',
     interaction: 'partner',
     personCount: 1,
+    symptomsChecked: 'no',
 
     setting: 'indoor',
     distance: 'intimate',
@@ -76,12 +97,15 @@ export const prepopulated: {
     theirMask: 'none',
     yourMask: 'none',
     voice: 'normal',
+    theirVaccine: 'undefined',
+    scenarioName: 'liveInPartner_noContacts',
   },
 
-  'Grocery store for 60 minutes': {
+  '60minShopping': {
     riskProfile: 'average',
     interaction: 'oneTime',
     personCount: 5,
+    symptomsChecked: 'no',
 
     setting: 'indoor',
     distance: 'sixFt',
@@ -89,25 +113,79 @@ export const prepopulated: {
     theirMask: 'basic',
     yourMask: 'basic',
     voice: 'silent',
+    theirVaccine: 'undefined',
+    scenarioName: '60minShopping',
   },
 
-  'Plane ride': {
+  '60minShoppingFew': {
     riskProfile: 'average',
     interaction: 'oneTime',
-    personCount: 20,
+    personCount: 3,
+    symptomsChecked: 'no',
 
     setting: 'indoor',
+    distance: 'sixFt',
+    duration: 60,
+    theirMask: 'basic',
+    yourMask: 'basic',
+    voice: 'silent',
+    theirVaccine: 'undefined',
+    scenarioName: '60minShoppingFew',
+  },
+
+  '60minShoppingCrowded': {
+    riskProfile: 'average',
+    interaction: 'oneTime',
+    personCount: 10,
+    symptomsChecked: 'no',
+
+    setting: 'indoor',
+    distance: 'sixFt',
+    duration: 60,
+    theirMask: 'basic',
+    yourMask: 'basic',
+    voice: 'silent',
+    theirVaccine: 'undefined',
+    scenarioName: '60minShoppingCrowded',
+  },
+
+  planeRide: {
+    riskProfile: 'average',
+    interaction: 'oneTime',
+    personCount: 41,
+    symptomsChecked: 'no',
+
+    setting: 'plane',
     distance: 'sixFt',
     duration: 360,
     theirMask: 'basic',
     yourMask: 'basic',
     voice: 'silent',
+    theirVaccine: 'undefined',
+    scenarioName: 'planeRide',
   },
 
-  'Eating in restaurant, outdoors': {
+  planeRideMiddleSeatEmpty: {
+    riskProfile: 'average',
+    interaction: 'oneTime',
+    personCount: 20,
+    symptomsChecked: 'no',
+
+    setting: 'plane',
+    distance: 'sixFt',
+    duration: 360,
+    theirMask: 'basic',
+    yourMask: 'basic',
+    voice: 'silent',
+    theirVaccine: 'undefined',
+    scenarioName: 'planeRideMiddleSeatEmpty',
+  },
+
+  restaurantOutdoors: {
     riskProfile: 'average',
     interaction: 'oneTime',
     personCount: 15,
+    symptomsChecked: 'no',
 
     setting: 'outdoor',
     distance: 'sixFt',
@@ -115,12 +193,15 @@ export const prepopulated: {
     theirMask: 'none',
     yourMask: 'none',
     voice: 'normal',
+    theirVaccine: 'undefined',
+    scenarioName: 'restaurantOutdoors',
   },
 
-  'Eating in restaurant, indoors': {
+  restaurantIndoors: {
     riskProfile: 'average',
     interaction: 'oneTime',
     personCount: 15,
+    symptomsChecked: 'no',
 
     setting: 'indoor',
     distance: 'sixFt',
@@ -128,12 +209,15 @@ export const prepopulated: {
     theirMask: 'none',
     yourMask: 'none',
     voice: 'normal',
+    theirVaccine: 'undefined',
+    scenarioName: 'restaurantIndoors',
   },
 
-  'Going to bar': {
+  bar: {
     riskProfile: 'average',
     interaction: 'oneTime',
     personCount: 15,
+    symptomsChecked: 'no',
 
     setting: 'indoor',
     distance: 'sixFt',
@@ -141,12 +225,15 @@ export const prepopulated: {
     theirMask: 'none',
     yourMask: 'none',
     voice: 'loud',
+    theirVaccine: 'undefined',
+    scenarioName: 'bar',
   },
 
-  'Large outdoor party: masked with 250 people': {
+  largeOutdoorParty: {
     riskProfile: 'average',
     interaction: 'oneTime',
-    personCount: 250,
+    personCount: 80,
+    symptomsChecked: 'no',
 
     setting: 'outdoor',
     distance: 'normal',
@@ -154,12 +241,15 @@ export const prepopulated: {
     theirMask: 'basic',
     yourMask: 'basic',
     voice: 'normal',
+    theirVaccine: 'undefined',
+    scenarioName: 'largeOutdoorParty',
   },
 
-  'Small indoor party: unmasked with 25 people': {
+  smallIndoorParty25: {
     riskProfile: 'average',
     interaction: 'oneTime',
     personCount: 25,
+    symptomsChecked: 'no',
 
     setting: 'indoor',
     distance: 'normal',
@@ -167,12 +257,15 @@ export const prepopulated: {
     theirMask: 'none',
     yourMask: 'none',
     voice: 'normal',
+    theirVaccine: 'undefined',
+    scenarioName: 'smallIndoorParty25',
   },
 
-  'Outdoor, masked hangout with person who has COVID': {
+  outdoorMaskedWithCovidPositive: {
     riskProfile: 'hasCovid',
     interaction: 'oneTime',
     personCount: 1,
+    symptomsChecked: 'no',
 
     setting: 'outdoor',
     distance: 'normal',
@@ -180,12 +273,15 @@ export const prepopulated: {
     theirMask: 'basic',
     yourMask: 'basic',
     voice: 'normal',
+    theirVaccine: 'undefined',
+    scenarioName: 'outdoorMaskedWithCovidPositive',
   },
 
-  'Indoor, unmasked hangout with person who has COVID': {
+  indoorUnmaskedWithCovidPositive: {
     riskProfile: 'hasCovid',
     interaction: 'oneTime',
     personCount: 1,
+    symptomsChecked: 'no',
 
     setting: 'indoor',
     distance: 'normal',
@@ -193,5 +289,40 @@ export const prepopulated: {
     theirMask: 'none',
     yourMask: 'none',
     voice: 'normal',
+    theirVaccine: 'undefined',
+    scenarioName: 'indoorUnmaskedWithCovidPositive',
+  },
+
+  votingInPerson: {
+    riskProfile: 'average',
+    interaction: 'oneTime',
+    personCount: 2,
+    symptomsChecked: 'no',
+
+    setting: 'indoor',
+    distance: 'sixFt',
+    duration: 10,
+    theirMask: 'basic',
+    yourMask: 'basic',
+    voice: 'silent',
+    theirVaccine: 'undefined',
+    scenarioName: 'votingInPerson',
+  },
+  custom: {
+    // This special profile is applied to reset the rest of the calculator.
+    // Keep at the end of this list.
+    riskProfile: '',
+    interaction: '',
+    personCount: 0,
+    symptomsChecked: 'no',
+
+    setting: '',
+    distance: '',
+    duration: 0,
+    theirMask: '',
+    yourMask: '',
+    voice: '',
+    theirVaccine: 'undefined',
+    scenarioName: 'custom',
   },
 }

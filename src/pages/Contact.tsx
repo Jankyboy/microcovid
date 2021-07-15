@@ -1,11 +1,11 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-import Donation from 'components/Donation'
+import { Donation } from 'components/Donation'
 
 export const Contact = (): React.ReactElement => {
   return (
-    <div id="paperPage">
+    <div className="paperPage">
       <h1>Contact Us</h1>
       <h3>Sign up for updates</h3>
       <p>
@@ -75,6 +75,15 @@ export const Contact = (): React.ReactElement => {
           energy we will have to incorporate larger changes. If you want to fork
           our project and implement larger changes yourself, be our guest!
         </p>
+      </p>
+      <h3>Translations</h3>
+      <p>
+        You don't need to be a programmer or a scientist to contribute! We
+        manage our translations on a user-friendly translation platform called
+        Weblate.{' '}
+        <a href="https://hosted.weblate.org/engage/microcovid/">Sign up here</a>{' '}
+        to suggest improvements or to translate the site to more languages,
+        making it accessible to more people around the world.
       </p>
       <h3>Questions</h3>
       <p>
