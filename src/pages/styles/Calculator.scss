@@ -1,0 +1,223 @@
+@import '~styles/_variables.scss';
+@import "~bootstrap/scss/mixins/_breakpoints.scss";
+@import "~rfs/scss";
+@import '~bootstrap/scss/bootstrap.scss';
+@import "~bootstrap/scss/_functions.scss";
+@import "~bootstrap/scss/_variables.scss";
+@import '~react-bootstrap-typeahead/css/Typeahead.css';
+
+#calculator {
+  #calculator-introduction {
+    padding: 20px;
+    padding-bottom: 0px;
+    font-size: $h4-font-size;
+    position: relative;
+
+  }
+
+  .request-feedback {
+    border: none;
+  }
+
+  .changelog {
+    background-color: $white !important;
+    border: none;
+    margin-bottom: 0;
+    padding: 0;
+    padding-bottom: 1.25em;
+  }
+
+  .stealthy-link {
+    font-style: italic;
+    color: $secondary;
+    text-decoration: none;
+    padding: 0;
+  }
+
+  .stealthy-link:hover {
+    color: $primary !important;
+    text-decoration: underline !important;
+  }
+
+  .col-md-12 {
+    margin-bottom: 30px;
+  }
+
+  .calculator-buttons {
+  }
+
+  // Colorful section headers
+  .card header {
+    color: white;
+    font-weight: bold;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    @include font-size(1.2rem);
+  }
+  header#location {
+    background: $primary;
+  }
+
+  header#activity-risk {
+    background: $indigo;
+  }
+
+  /* Chrome, Safari, Edge, Opera */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+   -webkit-appearance: none;
+   margin: 0;
+  }
+
+  /* Firefox */
+  input[type=number] {
+   -moz-appearance: textfield;
+  }
+
+
+  .card {
+    border: none;
+    background: lighten($gray-200, 1.5);
+    border-radius: 8px;
+
+    .warning {
+      border: 2px solid $warning-border;
+      padding: 8px;
+      margin: 10px 0;
+      background-color: $warning-fill;
+    }
+    .calculator-params {
+
+      h3 {
+        margin: 0 0 0.6em 0;
+      }
+    }
+  }
+
+  // Card subheader
+  .subheading {
+    padding-bottom: 15px;
+    border-bottom: 1px solid $gray-300;
+    margin-bottom: 15px;
+    @include media-breakpoint-up(md) {
+      height: 100px;
+    }
+  }
+
+  // Equal height columns
+  .card {
+    height: 100%;
+  }
+
+  // Empty state
+  .card-body {
+    @include media-breakpoint-up(md) {
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
+  .empty {
+    flex: 1;
+    display: flex;
+    height: 50%;
+    padding-top: 3em;
+    font-style: italic;
+    justify-content: center;
+  }
+
+  #activity-section {
+    min-height: 500px;
+
+    .form-group {
+      margin-bottom: 1.5em;
+    }
+  }
+
+  // Intermediate value readouts
+  .readout {
+    font-size: 1em;
+  }
+
+  .save-form {
+    display: inline-flex;
+    padding: 0;
+    @include media-breakpoint-down(sm) {
+      margin-top: 6px;
+    }
+  }
+
+  #points-row .col-md-12 {
+    margin-bottom: 0;
+  }
+  
+  .form-group {
+    .text-muted {
+      font-size: 1em;
+    }
+  }
+
+  .form-buttons {
+    > .btn {
+      margin: 0 5px;
+    }
+  }
+  
+  // Typeahead from react-bootstrap-typeahead
+  .rbt {
+    .rbt-input-main {
+      font-size: $input-font-size-lg;
+    }
+    .rbt-input-hint {
+      color: rgba(68,68,68,0.6) !important;
+    }
+
+    .rbt-close {
+      color: #444
+    }
+
+    .rbt-token {
+      pointer-events: none;
+      font-size: 1.17188rem;
+
+      .rbt-close {
+        pointer-events: auto;
+      }
+    }
+    .dropdown-item {
+      font-size: $input-font-size-lg;
+      white-space: normal;  // Wrap lines
+      text-decoration: initial;
+    }
+  }
+
+  label[for=predefined-typeahead] {
+    text-align: left;
+  }
+
+  .saved-data-text {
+    color: $secondary;
+    font-style: italic;
+    @include font-size($input-font-size-lg);
+  }
+
+  .collapsing-vertical-control {
+    .label {
+      color: #444 !important;
+    }
+  }
+
+  .scenario-results {
+    span {
+      color: $primary;
+    }
+  }
+    .scenario-results:hover {
+      background-color: $gray-200;
+      span {
+        color: $primary !important;
+      }
+    }
+
+}

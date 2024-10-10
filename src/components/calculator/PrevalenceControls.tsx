@@ -1,76 +1,37 @@
-import { isNumber } from 'lodash'
+import i18n from 'i18n'
+import countries from 'i18n-iso-countries'
 import React, { useEffect } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 
-import {
-  CalculatorData,
-  calculateLocationPersonAverage,
-  calculateLocationReportedPrevalence,
-} from 'data/calculate'
-import { Locations, PrevalenceDataDate } from 'data/location'
+import { ManualPrevalenceDetails } from './prevalence/ManualPrevalenceDetails'
+import { CalculatorData } from 'data/calculate'
+import { Locations } from 'data/location'
+import 'components/calculator/styles/PrevalenceControls.scss'
+import { dataForLocation } from 'data/locationHelpers'
 
-const PrevalenceField: React.FunctionComponent<{
+interface Option {
   label: string
-  value: string | number
-  unit?: string
-  setter: (newValue: string) => void
-  inputType: string
-  isEditable: boolean
-  max?: number
-  min?: number
-}> = ({
-  label,
-  value,
-  setter,
-  unit,
-  inputType,
-  isEditable,
-  max,
-  min,
-}): React.ReactElement => {
-  let body: React.ReactElement = (
-    <input
-      className="form-control form-control-lg"
-      type={inputType}
-      value={value}
-      readOnly={!isEditable}
-      onChange={(e) => {
-        if (isNumber(max) || isNumber(min)) {
-          let newValue = Number.parseFloat(e.target.value)
-          console.log(newValue)
-          newValue = isNumber(max) && newValue > max ? max : newValue
-          newValue = isNumber(min) && newValue < min ? min : newValue
-          console.log(newValue)
-          setter(newValue.toString())
-        } else {
-          setter(e.target.value)
-        }
-      }}
-    />
-  )
-  if (unit) {
-    body = (
-      <div className="input-group mb-3">
-        {body}
-        <div className="input-group-append">
-          <span className="input-group-text" id="basic-addon2">
-            %
-          </span>
-        </div>
-      </div>
-    )
-  }
-  return (
-    <div className="form-group">
-      <label htmlFor="duration">{label}</label>
-      {body}
-    </div>
-  )
+  value: string
+}
+
+const isFilled = (val: string): boolean => {
+  return val !== null && val !== undefined && val !== ''
+}
+
+const isTopLocation = (val: string): boolean => {
+  return isFilled(val) && !!Locations[val]
 }
 
 export const PrevalenceControls: React.FunctionComponent<{
   data: CalculatorData
   setter: (newData: CalculatorData) => void
 }> = ({ data, setter }): React.ReactElement => {
+  const { t } = useTranslation()
+  for (const iso_code of Object.keys(i18n.services.resourceStore.data)) {
+    countries.registerLocale(
+      require('i18n-iso-countries/langs/' + iso_code + '.json'), // eslint-disable-line @typescript-eslint/no-var-requires
+    )
+  }
   const locationGroups: { [key: string]: Array<string> } = {}
   for (const key in Locations) {
     const location = Locations[key]
@@ -84,203 +45,97 @@ export const PrevalenceControls: React.FunctionComponent<{
     }
   }
 
-  const setLocationData = (topLocation: string, subLocation: string) => {
+  const setLocationData = (
+    topLocation: string,
+    subLocation: string,
+    subSubLocation: string,
+  ) => {
     setter({
       ...data,
-      ...dataForLocation(subLocation || topLocation),
+      ...dataForLocation(subSubLocation || subLocation || topLocation),
       topLocation,
       subLocation,
+      subSubLocation,
     })
   }
 
   // If a stored location exists, load latest data for that location.
   useEffect(() => {
-    if (data.subLocation !== '' || data.topLocation !== '') {
-      setLocationData(data.topLocation, data.subLocation)
+    if (
+      !data.useManualEntry &&
+      (isFilled(data.subSubLocation || '') ||
+        isFilled(data.subLocation) ||
+        isTopLocation(data.topLocation))
+    ) {
+      setLocationData(
+        data.topLocation,
+        data.subLocation,
+        data.subSubLocation || '',
+      )
     }
     // Intentionally not depending on data so that this runs once on mount.
     // eslint-disable-next-line
   }, [])
 
-  let subPrompt: string
-  if (data.topLocation.startsWith('US_')) {
-    if (Locations[data.topLocation].label === 'Louisiana') {
-      subPrompt = 'Entire state, or select parish...'
-    } else if (Locations[data.topLocation].label === 'Alaska') {
-      subPrompt = 'Entire state, or select borough...'
-    } else {
-      subPrompt = 'Entire state, or select county...'
-    }
-  } else {
-    subPrompt = 'Entire country, or select region...'
+  const topLocationOptions = Object.keys(locationGroups).flatMap(
+    (groupName) => {
+      return locationGroups[groupName].map((locKey) => {
+        const country_label =
+          Locations[locKey].iso3 &&
+          countries.getName(Locations[locKey].iso3!, i18n.language, {
+            select: 'official',
+          })
+            ? countries.getName(Locations[locKey].iso3!, i18n.language, {
+                select: 'official',
+              })
+            : Locations[locKey].label
+        if (Locations[locKey].iso3! === 'GEO') {
+          // Georgia the country
+          return {
+            label:
+              country_label +
+              ' (' +
+              t('calculator.select_location_label_clarifications.country') +
+              ')',
+            value: locKey,
+          }
+        } else if (locKey === 'US_13') {
+          // Georgia the US state
+          return {
+            label:
+              country_label +
+              ' (' +
+              t('calculator.select_location_label_clarifications.US_state') +
+              ')',
+            value: locKey,
+          }
+        }
+        return { label: country_label, value: locKey }
+      })
+    },
+  )
+
+  const locationOptionCompareFn = (
+    a: { label: string; value: string },
+    b: { label: string; value: string },
+  ) => a.label.localeCompare(b.label)
+
+  // reorder the list according to the current locale, but keep
+  // English as-is to make sure US states remain at the top
+  if (i18n.language !== 'en-US') {
+    topLocationOptions.sort(locationOptionCompareFn)
   }
-
-  const showSubLocation =
-    data.topLocation !== '' &&
-    Locations[data.topLocation] &&
-    Locations[data.topLocation].subdivisions.length > 1
-
-  const locationSet = data.topLocation !== ''
 
   return (
     <React.Fragment>
-      <header id="location">Step 1 - Choose a location</header>
-      <div className="form-group">
-        <select
-          className="form-control form-control-lg"
-          value={data.topLocation}
-          onChange={(e) => {
-            setLocationData(e.target.value, '')
-          }}
-        >
-          <option value="">Select location or enter data...</option>
-          {Object.keys(locationGroups).map((groupName, groupInd) => (
-            <optgroup key={groupInd} label={groupName}>
-              {locationGroups[groupName].map((locKey, locInd) => (
-                <option key={locInd} value={locKey}>
-                  {Locations[locKey].label}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
-      </div>
-      {!showSubLocation ? null : (
-        <div className="form-group">
-          <select
-            className="form-control form-control-lg"
-            value={data.subLocation}
-            onChange={(e) => {
-              if (e.target.value === '') {
-                setLocationData(data.topLocation, '')
-              } else {
-                setLocationData(data.topLocation, e.target.value)
-              }
-            }}
-          >
-            <option value="">{subPrompt}</option>
-            {Locations[data.topLocation].subdivisions.map((key, index) => (
-              <option key={index} value={key}>
-                {Locations[key].label}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-      <PrevalenceField
-        label="Reported cases in past week"
-        value={(data.casesPastWeek || 0).toString()}
-        setter={(value) =>
-          setter({ ...data, casesPastWeek: parseInt(value || '') })
-        }
-        inputType="number"
-        isEditable={!locationSet}
+      <header id="location">
+        <Trans>calculator.characterize_community_infection_header</Trans>
+      </header>
+      <ManualPrevalenceDetails
+        id="prevalence-details"
+        data={data}
+        setter={setter}
       />
-      <PrevalenceField
-        label="Per how many people?"
-        value={data.population}
-        setter={(value) => setter({ ...data, population: value })}
-        inputType="text"
-        isEditable={!locationSet}
-      />
-      {locationSet && data.casesIncreasingPercentage === 0 ? (
-        <p>Cases are stable or decreasing.</p>
-      ) : (
-        <PrevalenceField
-          label="Percent increase in cases from last week to this week"
-          value={data.casesIncreasingPercentage}
-          unit="%"
-          setter={(value) => {
-            setter({ ...data, casesIncreasingPercentage: Number(value) })
-          }}
-          inputType="number"
-          min={0}
-          isEditable={!locationSet}
-        />
-      )}
-      {data.positiveCasePercentage === null ? (
-        <PrevalenceField
-          label="Percent of tests that come back positive"
-          value="no data available"
-          unit="%"
-          setter={(_value) => null}
-          inputType="text"
-          isEditable={false}
-        />
-      ) : (
-        <PrevalenceField
-          label="Percent of tests that come back positive"
-          value={data.positiveCasePercentage.toString()}
-          unit="%"
-          setter={(value) => {
-            setter({ ...data, positiveCasePercentage: Number(value) })
-          }}
-          inputType="number"
-          max={100}
-          min={0}
-          isEditable={!locationSet}
-        />
-      )}
-      <p>
-        Reported prevalence:{' '}
-        {((calculateLocationReportedPrevalence(data) || 0) * 100).toFixed(2)}%
-        <br />
-        Adjusted prevalence:{' '}
-        {(((calculateLocationPersonAverage(data) || 0) * 100) / 1e6).toFixed(2)}
-        %
-      </p>
-      {!locationSet ? null : (
-        <div>
-          <p>
-            Prevalence data consolidated from {}
-            <a href="https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data">
-              Johns Hopkins CSSE
-            </a>{' '}
-            (reported cases), {}
-            <a href="https://github.com/covid-projections/covid-data-model/blob/master/api/README.V1.md">
-              Covid Act Now
-            </a>{' '}
-            (US positive test rates), and {}
-            <a href="https://ourworldindata.org/coronavirus-testing#testing-for-covid-19-background-the-our-world-in-data-covid-19-testing-dataset">
-              Our World in Data
-            </a>{' '}
-            (international positive test rates).
-          </p>
-          <p>Data last updated {PrevalenceDataDate}.</p>
-        </div>
-      )}
     </React.Fragment>
   )
-}
-
-interface PrevalanceData {
-  population: string
-  casesPastWeek: number
-  casesIncreasingPercentage: number
-  positiveCasePercentage: number | null
-}
-
-function dataForLocation(location: string): PrevalanceData {
-  console.log('get data for ' + location)
-  const locationData = Locations[location]
-
-  if (locationData) {
-    return {
-      population: locationData.population,
-      casesPastWeek: locationData.casesPastWeek,
-      casesIncreasingPercentage:
-        Math.round(locationData.casesIncreasingPercentage * 10) / 10,
-      positiveCasePercentage:
-        locationData.positiveCasePercentage === null
-          ? null
-          : Math.round(locationData.positiveCasePercentage * 10) / 10,
-    }
-  }
-
-  return {
-    population: '',
-    casesPastWeek: 0,
-    casesIncreasingPercentage: 0,
-    positiveCasePercentage: 0,
-  }
 }

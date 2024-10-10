@@ -44,7 +44,7 @@ module.exports = {
             group: 'sibling',
           },
           {
-            pattern: 'paper/**',
+            pattern: 'posts/**',
             group: 'sibling',
           },
         ],
@@ -60,7 +60,9 @@ module.exports = {
         singleQuote: true,
         semi: false,
         trailingComma: 'all',
+        endOfLine: 'auto',
       },
     ],
+    eqeqeq: 'error',
   },
 }

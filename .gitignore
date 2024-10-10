@@ -1,5 +1,9 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# environment
+.env
+.idea
+
 # dependencies
 /node_modules
 /.pnp
@@ -7,6 +11,9 @@
 
 # testing
 /coverage
+
+# typechecking
+/typecover
 
 # production
 /build
@@ -19,7 +26,39 @@
 .env.production.local
 .venv
 .prevalence_data.json
+.secure-keys
 
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# vscode
+*.code-workspace
+.vscode
+
+# i18next backup files
+src/locales/*_old.json
+
+# python
+__pycache__/
+/.coverage
+
+# personal tools developers might use
+/.envrc
+/.nvmrc
+/.python-version
+/tsfmt.json
+/Makefile
+
+# emacs
+\#*
+
+# vim
+**.swp
+**.swo
+
+# test output
+computed_scenarios*.json
+
+# jupyter
+.ipynb_checkpoints
